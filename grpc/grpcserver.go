@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,10 +28,10 @@ var twitdb *mongo.Collection
 const port = ":9000"
 
 type mongoData struct {
-	id string
-	date *timestamppb.Timestamp
-	text string
-	nickname string
+	Id       string                 `json:"_id" bson:"_id"`
+	Date     *timestamppb.Timestamp `json:"date" bson:"date"`
+	Text     string                 `json:"text" bson:"text"`
+	Nickname string                 `json:"nickname" bson:"nickname"`
 }
 
 type Twit struct {
@@ -60,9 +59,9 @@ func (t *Twit) GetTwit(c context.Context, Id *proto.UUID) (*proto.Twit, error) {
 	var data = mongoData{}
 	result := twitdb.FindOne(mongoCtx, bson.M{"_id": Id.Value})
 	if err := result.Decode(&data); err != nil {
-		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not find blog with Object Id %s: %v", Id.Value, err))
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not find blog with Object ID %s: %v", Id.Value, err))
 	}
-	response := &proto.Twit{Id: Id, Date: data.date, Text: data.text, Nickname: data.nickname}
+	response := &proto.Twit{Id: Id, Date: data.Date, Text: data.Text, Nickname: data.Nickname}
 	return response, nil
 }
 
@@ -78,8 +77,8 @@ func (t *Twit) GetTwits(n *emptypb.Empty, stream proto.TwitService_GetTwitsServe
 		if err != nil {
 			return status.Errorf(codes.Unavailable, fmt.Sprintf("Could not decode data: %v", err))
 		}
-		retrievedUUID := &proto.UUID{Value: data.id}
-		protoData := &proto.Twit{Id: retrievedUUID, Date: data.date, Text: data.text, Nickname: data.nickname}
+		twitId := proto.UUID{Value: data.Id}
+		protoData := &proto.Twit{Id: &twitId, Date: data.Date, Text: data.Text, Nickname: data.Nickname}
 		stream.Send(protoData)
 	}
 	if err := cursor.Err(); err != nil {
@@ -99,7 +98,7 @@ func (t *Twit) DeleteTwit(c context.Context, id *proto.UUID) (*proto.Twit, error
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("Could not delete blog with id %s: %v", id.Value, err))
 		}
-	return &proto.Twit{Id: nil, Date: nil, Text: "", Nickname: ""}, errors.New("no twit found")
+	return &proto.Twit{Id: nil, Date: nil, Text: "", Nickname: ""}, nil
 }
 
 func Server() {
