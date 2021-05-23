@@ -7,19 +7,19 @@ import "google/protobuf/timestamp.proto";
 option go_package = "./";
 
 message Twit {
-  UUID id = 1;
+  twitUUID id = 1;
   google.protobuf.Timestamp date = 2;
   string text = 3;
   string nickname = 4;
 }
 
-message UUID {
+message twitUUID {
   string value = 1;
 }
 
 service TwitService {
   rpc getTwits(google.protobuf.Empty) returns (stream Twit) {}
   rpc writeTwit(Twit) returns (Twit) {}
-  rpc getTwit(UUID) returns (Twit) {}
-  rpc deleteTwit(UUID) returns (Twit) {}
+  rpc getTwit(twitUUID) returns (Twit) {}
+  rpc deleteTwit(twitUUID) returns (Twit) {}
 }

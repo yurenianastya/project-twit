@@ -1,0 +1,30 @@
+syntax = "proto3";
+package main;
+
+option go_package = "./";
+
+message Like {
+  reactionUUID twitId = 1;
+  int32 likeCounter = 2;
+}
+
+message Retwit {
+  reactionUUID twitId = 1;
+  int32 retwitCounter = 2;
+}
+
+message reactionUUID {
+  string value = 1;
+}
+
+service LikeService {
+  rpc getTwitLikes(reactionUUID) returns (Like);
+  rpc likeTwit(reactionUUID) returns (Like);
+  rpc unlikeTwit(reactionUUID) returns (Like);
+}
+
+service RetwitService {
+  rpc getTwitRetwits(reactionUUID) returns (Retwit);
+  rpc retwitTwit(reactionUUID) returns (Retwit);
+  rpc unretwitTwit(reactionUUID) returns (Retwit);
+}

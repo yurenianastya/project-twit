@@ -13,5 +13,11 @@ run to generate docs
 then after running program, visit
 http://localhost:8080/swagger/index.html
 
+### Running program
+to check grpc methods in browser run this command
+
+
+`grpcui -plaintext localhost:9000`
+
 ###  License
 [MIT](https://choosealicense.com/licenses/mit/)
