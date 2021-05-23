@@ -7,7 +7,6 @@ on:
     types: ['opened', 'edited', 'reopened', 'synchronize']
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
