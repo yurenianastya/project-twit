@@ -13,13 +13,17 @@ message Twit {
   string nickname = 4;
 }
 
+message ResponseTwit {
+  string value = 1;
+}
+
 message twitUUID {
   string value = 1;
 }
 
 service TwitService {
   rpc getTwits(google.protobuf.Empty) returns (stream Twit) {}
-  rpc writeTwit(Twit) returns (Twit) {}
+  rpc writeTwit(Twit) returns (ResponseTwit) {}
   rpc getTwit(twitUUID) returns (Twit) {}
-  rpc deleteTwit(twitUUID) returns (Twit) {}
+  rpc deleteTwit(twitUUID) returns (ResponseTwit) {}
 }

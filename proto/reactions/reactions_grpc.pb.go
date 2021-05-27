@@ -19,8 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LikeServiceClient interface {
 	GetTwitLikes(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error)
-	LikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error)
-	UnlikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error)
+	LikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error)
+	UnlikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error)
 }
 
 type likeServiceClient struct {
@@ -40,8 +40,8 @@ func (c *likeServiceClient) GetTwitLikes(ctx context.Context, in *ReactionUUID, 
 	return out, nil
 }
 
-func (c *likeServiceClient) LikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error) {
-	out := new(Like)
+func (c *likeServiceClient) LikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error) {
+	out := new(ResponseReaction)
 	err := c.cc.Invoke(ctx, "/main.LikeService/likeTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -49,8 +49,8 @@ func (c *likeServiceClient) LikeTwit(ctx context.Context, in *ReactionUUID, opts
 	return out, nil
 }
 
-func (c *likeServiceClient) UnlikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error) {
-	out := new(Like)
+func (c *likeServiceClient) UnlikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error) {
+	out := new(ResponseReaction)
 	err := c.cc.Invoke(ctx, "/main.LikeService/unlikeTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -63,8 +63,8 @@ func (c *likeServiceClient) UnlikeTwit(ctx context.Context, in *ReactionUUID, op
 // for forward compatibility
 type LikeServiceServer interface {
 	GetTwitLikes(context.Context, *ReactionUUID) (*Like, error)
-	LikeTwit(context.Context, *ReactionUUID) (*Like, error)
-	UnlikeTwit(context.Context, *ReactionUUID) (*Like, error)
+	LikeTwit(context.Context, *ReactionUUID) (*ResponseReaction, error)
+	UnlikeTwit(context.Context, *ReactionUUID) (*ResponseReaction, error)
 	mustEmbedUnimplementedLikeServiceServer()
 }
 
@@ -75,10 +75,10 @@ type UnimplementedLikeServiceServer struct {
 func (UnimplementedLikeServiceServer) GetTwitLikes(context.Context, *ReactionUUID) (*Like, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTwitLikes not implemented")
 }
-func (UnimplementedLikeServiceServer) LikeTwit(context.Context, *ReactionUUID) (*Like, error) {
+func (UnimplementedLikeServiceServer) LikeTwit(context.Context, *ReactionUUID) (*ResponseReaction, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LikeTwit not implemented")
 }
-func (UnimplementedLikeServiceServer) UnlikeTwit(context.Context, *ReactionUUID) (*Like, error) {
+func (UnimplementedLikeServiceServer) UnlikeTwit(context.Context, *ReactionUUID) (*ResponseReaction, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnlikeTwit not implemented")
 }
 func (UnimplementedLikeServiceServer) mustEmbedUnimplementedLikeServiceServer() {}
@@ -177,8 +177,8 @@ var LikeService_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RetwitServiceClient interface {
 	GetTwitRetwits(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error)
-	RetwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error)
-	UnretwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error)
+	RetwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error)
+	UnretwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error)
 }
 
 type retwitServiceClient struct {
@@ -198,8 +198,8 @@ func (c *retwitServiceClient) GetTwitRetwits(ctx context.Context, in *ReactionUU
 	return out, nil
 }
 
-func (c *retwitServiceClient) RetwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error) {
-	out := new(Retwit)
+func (c *retwitServiceClient) RetwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error) {
+	out := new(ResponseReaction)
 	err := c.cc.Invoke(ctx, "/main.RetwitService/retwitTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -207,8 +207,8 @@ func (c *retwitServiceClient) RetwitTwit(ctx context.Context, in *ReactionUUID, 
 	return out, nil
 }
 
-func (c *retwitServiceClient) UnretwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error) {
-	out := new(Retwit)
+func (c *retwitServiceClient) UnretwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ResponseReaction, error) {
+	out := new(ResponseReaction)
 	err := c.cc.Invoke(ctx, "/main.RetwitService/unretwitTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -221,8 +221,8 @@ func (c *retwitServiceClient) UnretwitTwit(ctx context.Context, in *ReactionUUID
 // for forward compatibility
 type RetwitServiceServer interface {
 	GetTwitRetwits(context.Context, *ReactionUUID) (*Retwit, error)
-	RetwitTwit(context.Context, *ReactionUUID) (*Retwit, error)
-	UnretwitTwit(context.Context, *ReactionUUID) (*Retwit, error)
+	RetwitTwit(context.Context, *ReactionUUID) (*ResponseReaction, error)
+	UnretwitTwit(context.Context, *ReactionUUID) (*ResponseReaction, error)
 	mustEmbedUnimplementedRetwitServiceServer()
 }
 
@@ -233,10 +233,10 @@ type UnimplementedRetwitServiceServer struct {
 func (UnimplementedRetwitServiceServer) GetTwitRetwits(context.Context, *ReactionUUID) (*Retwit, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTwitRetwits not implemented")
 }
-func (UnimplementedRetwitServiceServer) RetwitTwit(context.Context, *ReactionUUID) (*Retwit, error) {
+func (UnimplementedRetwitServiceServer) RetwitTwit(context.Context, *ReactionUUID) (*ResponseReaction, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RetwitTwit not implemented")
 }
-func (UnimplementedRetwitServiceServer) UnretwitTwit(context.Context, *ReactionUUID) (*Retwit, error) {
+func (UnimplementedRetwitServiceServer) UnretwitTwit(context.Context, *ReactionUUID) (*ResponseReaction, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnretwitTwit not implemented")
 }
 func (UnimplementedRetwitServiceServer) mustEmbedUnimplementedRetwitServiceServer() {}

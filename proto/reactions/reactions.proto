@@ -13,18 +13,22 @@ message Retwit {
   int32 retwitCounter = 2;
 }
 
+message ResponseReaction {
+  string value = 1;
+}
+
 message reactionUUID {
   string value = 1;
 }
 
 service LikeService {
   rpc getTwitLikes(reactionUUID) returns (Like);
-  rpc likeTwit(reactionUUID) returns (Like);
-  rpc unlikeTwit(reactionUUID) returns (Like);
+  rpc likeTwit(reactionUUID) returns (ResponseReaction);
+  rpc unlikeTwit(reactionUUID) returns (ResponseReaction);
 }
 
 service RetwitService {
   rpc getTwitRetwits(reactionUUID) returns (Retwit);
-  rpc retwitTwit(reactionUUID) returns (Retwit);
-  rpc unretwitTwit(reactionUUID) returns (Retwit);
+  rpc retwitTwit(reactionUUID) returns (ResponseReaction);
+  rpc unretwitTwit(reactionUUID) returns (ResponseReaction);
 }
