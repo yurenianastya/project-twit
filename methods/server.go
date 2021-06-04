@@ -1,4 +1,4 @@
-package grpc
+package methods
 
 import (
 	"context"
@@ -19,11 +19,12 @@ import (
 var client *mongo.Client
 var mongoCtx context.Context
 
-func GetEnvVariable(key string) string {
-	viper.SetConfigFile(".env")
+func GetEnvVariable(key string, path string) string {
+	viper.AddConfigPath(path)
+	viper.SetConfigName("app")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Error while reading config file %s", err)
+		log.Fatalf("Error while reading app.env file %s", err)
 	}
 	value, ok := viper.Get(key).(string)
 	if !ok {
@@ -33,7 +34,8 @@ func GetEnvVariable(key string) string {
 }
 
 func Configure() {
-	lis, err := net.Listen("tcp", GetEnvVariable("SERVER_PORT"))
+	listener, err := net.Listen("tcp",
+		GetEnvVariable("SERVER_PORT", ".."))
 	if err != nil {
 		fmt.Println("failed to listen: ", err)
 		return
@@ -45,8 +47,10 @@ func Configure() {
 	reactions.RegisterRetwitServiceServer(server, &Retwit{})
 	reflection.Register(server)
 	// connection to mongodb
-	client, _ = mongo.NewClient(options.Client().ApplyURI(GetEnvVariable("MONGO_ADDRESS")))
-	mongoCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	client, _ = mongo.NewClient(options.Client().
+		ApplyURI(GetEnvVariable("MONGO_ADDRESS","..")))
+	mongoCtx, cancel := context.
+		WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	err = client.Connect(mongoCtx)
 	if err != nil {
@@ -59,7 +63,7 @@ func Configure() {
 		}
 	}(client, mongoCtx)
 	// start listening rpc server
-	err = server.Serve(lis)
+	err = server.Serve(listener)
 	if err != nil {
 		log.Fatal(err)
 	}

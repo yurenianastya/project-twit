@@ -1,4 +1,4 @@
-package grpc
+package methods
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"project-twit/proto/reactions"
 )
 
+const increment = "increment"
+const decrement = "decrement"
 
 // struct for decoding reactions data from mongodb, has the same fields as in database
 type mongoReactionsData struct {
@@ -24,9 +26,9 @@ type Retwit struct {
 	reactions.UnimplementedRetwitServiceServer
 }
 
-func getMethod(id *reactions.ReactionUUID) mongoReactionsData {
-	reactionCollection := client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("REACTIONS_COLLECTION"))
+func get(id *reactions.ReactionUUID) mongoReactionsData {
+	reactionCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("REACTIONS_COLLECTION",".."))
 	var data = mongoReactionsData{}
 	result := reactionCollection.FindOne(mongoCtx, bson.M{"_id": id.Value})
 	err := result.Decode(&data)
@@ -37,18 +39,18 @@ func getMethod(id *reactions.ReactionUUID) mongoReactionsData {
 	return data
 }
 
-func updateMethod(field string, method string, id *reactions.ReactionUUID) {
-	reactionCollection := client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("REACTIONS_COLLECTION"))
+func update(field string, method string, id *reactions.ReactionUUID) {
+	reactionCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("REACTIONS_COLLECTION",".."))
 	opts := options.Update().SetUpsert(true)
 	switch method {
-	case "decrement":
+	case decrement:
 		_, err := reactionCollection.UpdateOne(mongoCtx, bson.M{"_id": id.Value},
 			bson.M{"$inc": bson.M{field: -1}}, opts)
 		if err != nil {
 			log.Fatal(err)
 		}
-	case "increment":
+	case increment:
 		_, err := reactionCollection.UpdateOne(mongoCtx, bson.M{"_id": id.Value},
 			bson.M{"$inc": bson.M{field: 1}}, opts)
 		if err != nil {
@@ -58,37 +60,37 @@ func updateMethod(field string, method string, id *reactions.ReactionUUID) {
 }
 
 func (* Like) GetTwitLikes(c context.Context, id *reactions.ReactionUUID) (*reactions.Like, error) {
-	data := getMethod(id)
+	data := get(id)
 	response := &reactions.Like{TwitId: id, LikeCounter: data.LikeCounter}
 	return response, nil
 }
 
 func (* Like) LikeTwit(c context.Context, id *reactions.ReactionUUID) (*reactions.ResponseReaction, error){
-	updateMethod("likes", "increment", id)
+	update("likes", increment, id)
 	twitStatus := &reactions.ResponseReaction{Value: "Twit was successfully liked"}
 	return twitStatus, nil
 }
 
 func (* Like) UnlikeTwit (c context.Context, id *reactions.ReactionUUID) (*reactions.ResponseReaction, error) {
-	updateMethod("likes", "decrement", id)
+	update("likes", decrement, id)
 	twitStatus := &reactions.ResponseReaction{Value: "Twit was successfully unliked"}
 	return twitStatus, nil
 }
 
 func (* Retwit) GetTwitRetwits(c context.Context, id *reactions.ReactionUUID) (*reactions.Retwit, error){
-	data := getMethod(id)
+	data := get(id)
 	response := &reactions.Retwit{TwitId: id, RetwitCounter: data.RetwitCounter}
 	return response, nil
 }
 
 func (* Retwit) RetwitTwit(c context.Context, id *reactions.ReactionUUID) (*reactions.ResponseReaction, error){
-	updateMethod("retwits", "increment", id)
+	update("retwits", increment, id)
 	twitStatus := &reactions.ResponseReaction{Value: "Twit was successfully retwited"}
 	return twitStatus, nil
 }
 
 func (* Retwit) UnretwitTwit(c context.Context, id *reactions.ReactionUUID) (*reactions.ResponseReaction, error){
-	updateMethod("retwits", "decrement", id)
+	update("retwits", decrement, id)
 	twitStatus := &reactions.ResponseReaction{Value: "Twit was successfully unretwited"}
 	return twitStatus, nil
 }

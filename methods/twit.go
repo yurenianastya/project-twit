@@ -1,4 +1,4 @@
-package grpc
+package methods
 
 import (
 	"context"
@@ -29,15 +29,15 @@ type mongoTwitData struct {
 func (t *Twit) WriteTwit(c context.Context, input *twit.Twit) (*twit.ResponseTwit, error) {
 	input.Id.Value = uuid.New().String()
 	input.Date = timestamppb.Now()
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("REACTIONS_COLLECTION"))
+	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("REACTIONS_COLLECTION",".."))
 	_, err := twitCollection.InsertOne(mongoCtx, bson.M{"_id": input.Id.Value, "likes": 0,
 		"retwits": 0})
 	if err != nil {
 		return nil, err
 	}
-	twitCollection = client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("TWIT_COLLECTION"))
+	twitCollection = client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
 	_, err = twitCollection.InsertOne(mongoCtx,
 		bson.M{"_id": input.Id.Value,
 			"date": input.Date,
@@ -54,8 +54,8 @@ func (t *Twit) WriteTwit(c context.Context, input *twit.Twit) (*twit.ResponseTwi
 }
 
 func (t *Twit) GetTwit(c context.Context, id *twit.TwitUUID) (*twit.Twit, error) {
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("TWIT_COLLECTION"))
+	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
 	var data = mongoTwitData{}
 	result := twitCollection.FindOne(mongoCtx, bson.M{"_id": id.Value})
 	if err := result.Decode(&data); err != nil {
@@ -71,8 +71,8 @@ func (t *Twit) GetTwit(c context.Context, id *twit.TwitUUID) (*twit.Twit, error)
 }
 
 func (t *Twit) GetTwits(n *emptypb.Empty, stream twit.TwitService_GetTwitsServer) error {
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("TWIT_COLLECTION"))
+	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
 	data := mongoTwitData{}
 	cursor, err := twitCollection.Find(context.Background(), bson.M{})
 	if err != nil {
@@ -107,14 +107,14 @@ func (t *Twit) GetTwits(n *emptypb.Empty, stream twit.TwitService_GetTwitsServer
 }
 
 func (t *Twit) DeleteTwit(c context.Context, id *twit.TwitUUID) (*twit.ResponseTwit, error) {
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("REACTIONS_COLLECTION"))
+	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("REACTIONS_COLLECTION",".."))
 	_, err := twitCollection.DeleteOne(mongoCtx, bson.M{"_id": id.Value})
 	if err != nil {
 		return nil, err
 	}
-	twitCollection = client.Database(GetEnvVariable("TWIT_DB")).
-		Collection(GetEnvVariable("TWIT_COLLECTION"))
+	twitCollection = client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
 	_, err = twitCollection.DeleteOne(mongoCtx, bson.M{"_id": id.Value})
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound,
