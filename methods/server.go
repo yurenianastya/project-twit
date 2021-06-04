@@ -35,7 +35,7 @@ func GetEnvVariable(key string, path string) string {
 
 func Configure() {
 	listener, err := net.Listen("tcp",
-		GetEnvVariable("SERVER_PORT", ".."))
+		GetEnvVariable("SERVER_PORT", "."))
 	if err != nil {
 		fmt.Println("failed to listen: ", err)
 		return
@@ -48,7 +48,7 @@ func Configure() {
 	reflection.Register(server)
 	// connection to mongodb
 	client, _ = mongo.NewClient(options.Client().
-		ApplyURI(GetEnvVariable("MONGO_ADDRESS","..")))
+		ApplyURI(GetEnvVariable("MONGO_ADDRESS",".")))
 	mongoCtx, cancel := context.
 		WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -63,6 +63,7 @@ func Configure() {
 		}
 	}(client, mongoCtx)
 	// start listening rpc server
+	fmt.Println("Starting server...")
 	err = server.Serve(listener)
 	if err != nil {
 		log.Fatal(err)
