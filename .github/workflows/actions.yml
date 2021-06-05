@@ -2,7 +2,7 @@ name: Go
 
 on:
   push:
-    branches: [ main, dev]
+    branches: [ main, dev ]
   pull_request:
     types: ['opened', 'edited', 'reopened', 'synchronize']
 
@@ -20,6 +20,9 @@ jobs:
 
       - name: Lint
         run: make run-linter
+
+      - name: tests
+        run: make test
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v1.6

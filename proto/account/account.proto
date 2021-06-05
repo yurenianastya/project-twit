@@ -1,0 +1,26 @@
+syntax = "proto3";
+package main;
+
+option go_package = "./;_";
+import "google/protobuf/timestamp.proto";
+
+message accountTwitUUID {
+  string value = 1;
+}
+
+message Username {
+  string value = 1;
+}
+
+message AccountTwit {
+  accountTwitUUID id = 1;
+  google.protobuf.Timestamp date = 2;
+  string text = 3;
+  string nickname = 4;
+}
+
+service AccountService {
+  rpc getLikedTwits(Username) returns (stream AccountTwit);
+  rpc getRetwitedTwits(Username) returns (stream AccountTwit);
+  rpc getUserTwits(Username) returns (stream AccountTwit);
+}

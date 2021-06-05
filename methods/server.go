@@ -8,27 +8,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
 	"net"
+	"project-twit/proto/account"
+	"project-twit/proto/lists"
 	"project-twit/proto/reactions"
 	"project-twit/proto/twit"
 	"time"
 )
 
 
-var client *mongo.Client
-var mongoCtx context.Context
+var Client *mongo.Client
+var MongoCtx context.Context
 
 func GetEnvVariable(key string, path string) string {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Error while reading app.env file %s", err)
+		fmt.Printf("Error while reading app.env file %s\n", err)
 	}
 	value, ok := viper.Get(key).(string)
 	if !ok {
-		log.Fatalf("Invalid type assertion")
+		fmt.Println("Invalid type assertion")
 	}
 	return value
 }
@@ -43,29 +44,33 @@ func Configure() {
 	// Creates a new gRPC Server
 	server := grpc.NewServer()
 	twit.RegisterTwitServiceServer(server, &Twit{})
-	reactions.RegisterLikeServiceServer(server, &Like{})
-	reactions.RegisterRetwitServiceServer(server, &Retwit{})
+	reactions.RegisterReactionServiceServer(server, &Reaction{})
+	lists.RegisterListServiceServer(server, &List{})
+	account.RegisterAccountServiceServer(server, &Account{})
 	reflection.Register(server)
 	// connection to mongodb
-	client, _ = mongo.NewClient(options.Client().
+	Client, _ = mongo.NewClient(options.Client().
 		ApplyURI(GetEnvVariable("MONGO_ADDRESS",".")))
-	mongoCtx, cancel := context.
+	MongoCtx, cancel := context.
 		WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	err = client.Connect(mongoCtx)
+	err = Client.Connect(MongoCtx)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 	defer func(client *mongo.Client, ctx context.Context) {
 		err := client.Disconnect(ctx)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			return
 		}
-	}(client, mongoCtx)
+	}(Client, MongoCtx)
 	// start listening rpc server
 	fmt.Println("Starting server...")
 	err = server.Serve(listener)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 }

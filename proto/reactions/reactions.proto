@@ -1,16 +1,19 @@
 syntax = "proto3";
 package main;
 
-option go_package = "./";
+option go_package = "./;_";
 
-message Like {
+
+message ActionResult {
   reactionUUID twitId = 1;
   int32 likeCounter = 2;
+  int32 retwitCounter = 3;
 }
 
-message Retwit {
+message UsersAction {
   reactionUUID twitId = 1;
-  int32 retwitCounter = 2;
+  string action = 2;
+  string user = 3;
 }
 
 message ResponseReaction {
@@ -21,14 +24,8 @@ message reactionUUID {
   string value = 1;
 }
 
-service LikeService {
-  rpc getTwitLikes(reactionUUID) returns (Like);
-  rpc likeTwit(reactionUUID) returns (ResponseReaction);
-  rpc unlikeTwit(reactionUUID) returns (ResponseReaction);
-}
-
-service RetwitService {
-  rpc getTwitRetwits(reactionUUID) returns (Retwit);
-  rpc retwitTwit(reactionUUID) returns (ResponseReaction);
-  rpc unretwitTwit(reactionUUID) returns (ResponseReaction);
+service ReactionService {
+  rpc getTwitReactions(reactionUUID) returns (ActionResult);
+  rpc reactToTwit(UsersAction) returns (ResponseReaction);
+  rpc unreactToTwit(UsersAction) returns (ResponseReaction);
 }

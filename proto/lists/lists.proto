@@ -1,0 +1,38 @@
+syntax = "proto3";
+package main;
+
+option go_package = "./;_";
+import "google/protobuf/timestamp.proto";
+
+message listUUID {
+  string value = 1;
+}
+
+message User {
+  string listUUID = 1;
+  string username = 2;
+}
+
+message ListName {
+  string value = 1;
+}
+
+message ListResponse {
+  string value = 1;
+}
+
+message ListTwit {
+  listUUID id = 1;
+  google.protobuf.Timestamp date = 2;
+  string text = 3;
+  string nickname = 4;
+}
+
+service ListService {
+  rpc createCustomList(ListName) returns (ListResponse);
+  rpc addUserToCustomList(User) returns (ListResponse);
+  rpc removeUserFromCustomList(User) returns (ListResponse);
+  rpc getListUsers(listUUID) returns (ListResponse);
+  rpc getUsersTwitsFromCustomList(listUUID) returns (stream ListTwit);
+  rpc deleteCustomList(listUUID) returns (ListResponse);
+}

@@ -12,33 +12,27 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"project-twit/proto/twit"
+	"project-twit/utils"
 )
 
 
 type Twit struct {
 	twit.UnimplementedTwitServiceServer
 }
-// struct for decoding twit data from mongodb, has the same fields as in database
-type mongoTwitData struct {
-	ID       string                 `json:"_id" bson:"_id"`
-	Date     *timestamppb.Timestamp `json:"date" bson:"date"`
-	Text     string                 `json:"text" bson:"text"`
-	Nickname string                 `json:"nickname" bson:"nickname"`
-}
 
 func (t *Twit) WriteTwit(c context.Context, input *twit.Twit) (*twit.ResponseTwit, error) {
 	input.Id.Value = uuid.New().String()
 	input.Date = timestamppb.Now()
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+	twitCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
 		Collection(GetEnvVariable("REACTIONS_COLLECTION",".."))
-	_, err := twitCollection.InsertOne(mongoCtx, bson.M{"_id": input.Id.Value, "likes": 0,
+	_, err := twitCollection.InsertOne(MongoCtx, bson.M{"_id": input.Id.Value, "likes": 0,
 		"retwits": 0})
 	if err != nil {
 		return nil, err
 	}
-	twitCollection = client.Database(GetEnvVariable("TWIT_DB","..")).
+	twitCollection = Client.Database(GetEnvVariable("TWIT_DB","..")).
 		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
-	_, err = twitCollection.InsertOne(mongoCtx,
+	_, err = twitCollection.InsertOne(MongoCtx,
 		bson.M{"_id": input.Id.Value,
 			"date": input.Date,
 			"text": input.Text,
@@ -54,10 +48,10 @@ func (t *Twit) WriteTwit(c context.Context, input *twit.Twit) (*twit.ResponseTwi
 }
 
 func (t *Twit) GetTwit(c context.Context, id *twit.TwitUUID) (*twit.Twit, error) {
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+	twitCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
 		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
-	var data = mongoTwitData{}
-	result := twitCollection.FindOne(mongoCtx, bson.M{"_id": id.Value})
+	var data = utils.MongoDecodedTwitData{}
+	result := twitCollection.FindOne(MongoCtx, bson.M{"_id": id.Value})
 	if err := result.Decode(&data); err != nil {
 		return nil, status.Errorf(codes.NotFound,
 			fmt.Sprintf("Could not find twit with Object ID %s: %v", id.Value, err))
@@ -71,9 +65,9 @@ func (t *Twit) GetTwit(c context.Context, id *twit.TwitUUID) (*twit.Twit, error)
 }
 
 func (t *Twit) GetTwits(n *emptypb.Empty, stream twit.TwitService_GetTwitsServer) error {
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+	twitCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
 		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
-	data := mongoTwitData{}
+	data := utils.MongoDecodedTwitData{}
 	cursor, err := twitCollection.Find(context.Background(), bson.M{})
 	if err != nil {
 		return status.Errorf(codes.Internal, fmt.Sprintf("Unknown internal error: %v", err))
@@ -90,12 +84,12 @@ func (t *Twit) GetTwits(n *emptypb.Empty, stream twit.TwitService_GetTwitsServer
 			return status.Errorf(codes.Unavailable, fmt.Sprintf("Could not decode data: %v", err))
 		}
 		twitID := twit.TwitUUID{Value: data.ID}
-		protoData := &twit.Twit{
+		response := &twit.Twit{
 			Id: &twitID,
 			Date: data.Date,
 			Text: data.Text,
 			Nickname: data.Nickname}
-		err = stream.Send(protoData)
+		err = stream.Send(response)
 		if err != nil {
 			return err
 		}
@@ -107,15 +101,15 @@ func (t *Twit) GetTwits(n *emptypb.Empty, stream twit.TwitService_GetTwitsServer
 }
 
 func (t *Twit) DeleteTwit(c context.Context, id *twit.TwitUUID) (*twit.ResponseTwit, error) {
-	twitCollection := client.Database(GetEnvVariable("TWIT_DB","..")).
+	twitCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
 		Collection(GetEnvVariable("REACTIONS_COLLECTION",".."))
-	_, err := twitCollection.DeleteOne(mongoCtx, bson.M{"_id": id.Value})
+	_, err := twitCollection.DeleteOne(MongoCtx, bson.M{"_id": id.Value})
 	if err != nil {
 		return nil, err
 	}
-	twitCollection = client.Database(GetEnvVariable("TWIT_DB","..")).
+	twitCollection = Client.Database(GetEnvVariable("TWIT_DB","..")).
 		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
-	_, err = twitCollection.DeleteOne(mongoCtx, bson.M{"_id": id.Value})
+	_, err = twitCollection.DeleteOne(MongoCtx, bson.M{"_id": id.Value})
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound,
 			fmt.Sprintf("Could not delete twit with id %s: %v", id.Value, err))
