@@ -5,4 +5,4 @@ run-linter:
 	sudo $(shell go env GOPATH)/bin/golangci-lint run
 
 test:
-	cd $(shell go env GOPATH)/src/project-twit/methods && go test -cover
+	cd methods && go test -cover
