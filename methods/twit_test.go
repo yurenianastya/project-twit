@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"project-twit/proto/twit"
+	"project-twit/utils"
 	"testing"
 	"time"
 )
@@ -26,26 +27,26 @@ func (_m *mockTwitService_GetTwitsServer) Send(twit *twit.Twit) error {
 }
 
 func DatabaseInit() (*mongo.Client, context.Context, func()){
-	client, _ = mongo.NewClient(options.Client().ApplyURI(GetEnvVariable("MONGO_ADDRESS", "..")))
+	Client, _ = mongo.NewClient(options.Client().ApplyURI(GetEnvVariable("MONGO_ADDRESS", "..")))
 	mongoCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	err := client.Connect(mongoCtx)
+	err := Client.Connect(mongoCtx)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return client, mongoCtx, func() {
+	return Client, mongoCtx, func() {
 		cancel()
-		err := client.Disconnect(mongoCtx)
+		err := Client.Disconnect(mongoCtx)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 }
 
-func getRandomTwitDocument(collection *mongo.Collection) mongoTwitData {
-	pipeline := []bson.D{{{"$sample", bson.D{{"size", 1}}}}}
+func getRandomTwitDocument(collection *mongo.Collection) utils.MongoDecodedTwitData {
+	pipeline := []bson.M{{"$sample": bson.M{"size": 1}}}
 	cursor, err := collection.Aggregate(context.Background(), pipeline)
-	var data mongoTwitData
+	var data utils.MongoDecodedTwitData
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -107,7 +108,7 @@ func TestGetTwit(t *testing.T) {
 	_, ctx, closeCon := DatabaseInit()
 	defer closeCon()
 	//getting id that exists from db to test func
-	collection := client.Database(GetEnvVariable("TWIT_DB",".")).
+	collection := Client.Database(GetEnvVariable("TWIT_DB",".")).
 		Collection(GetEnvVariable("REACTIONS_COLLECTION","."))
 	data := getRandomTwitDocument(collection)
 	twitStruct := Twit{}
@@ -123,7 +124,7 @@ func TestDeleteTwit(t *testing.T) {
 	_, ctx, closeCon := DatabaseInit()
 	defer closeCon()
 	//getting id that exists from db to test func
-	collection := client.Database(GetEnvVariable("TWIT_DB",".")).
+	collection := Client.Database(GetEnvVariable("TWIT_DB",".")).
 		Collection(GetEnvVariable("TWIT_COLLECTION","."))
 	data := getRandomTwitDocument(collection)
 	twitStruct := Twit{}
