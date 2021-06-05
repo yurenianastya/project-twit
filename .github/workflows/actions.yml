@@ -18,6 +18,9 @@ jobs:
       - name: Installing lint
         run: make install-lint
 
+      - name: Tests
+        run: make test
+
       - name: Lint
         run: make run-linter
 
