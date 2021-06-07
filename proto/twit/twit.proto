@@ -4,13 +4,17 @@ package main;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "./";
+option go_package = "./;_";
 
 message Twit {
   twitUUID id = 1;
   google.protobuf.Timestamp date = 2;
   string text = 3;
-  string nickname = 4;
+  string user = 4;
+}
+
+message ResponseTwit {
+  string value = 1;
 }
 
 message twitUUID {
@@ -19,7 +23,7 @@ message twitUUID {
 
 service TwitService {
   rpc getTwits(google.protobuf.Empty) returns (stream Twit) {}
-  rpc writeTwit(Twit) returns (Twit) {}
+  rpc writeTwit(Twit) returns (ResponseTwit) {}
   rpc getTwit(twitUUID) returns (Twit) {}
-  rpc deleteTwit(twitUUID) returns (Twit) {}
+  rpc deleteTwit(twitUUID) returns (ResponseTwit) {}
 }

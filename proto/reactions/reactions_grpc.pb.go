@@ -14,318 +14,160 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// LikeServiceClient is the client API for LikeService service.
+// ReactionServiceClient is the client API for ReactionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type LikeServiceClient interface {
-	GetTwitLikes(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error)
-	LikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error)
-	UnlikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error)
+type ReactionServiceClient interface {
+	GetTwitReactions(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ActionResult, error)
+	ReactToTwit(ctx context.Context, in *UsersAction, opts ...grpc.CallOption) (*ResponseReaction, error)
+	UnreactToTwit(ctx context.Context, in *UsersAction, opts ...grpc.CallOption) (*ResponseReaction, error)
 }
 
-type likeServiceClient struct {
+type reactionServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewLikeServiceClient(cc grpc.ClientConnInterface) LikeServiceClient {
-	return &likeServiceClient{cc}
+func NewReactionServiceClient(cc grpc.ClientConnInterface) ReactionServiceClient {
+	return &reactionServiceClient{cc}
 }
 
-func (c *likeServiceClient) GetTwitLikes(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error) {
-	out := new(Like)
-	err := c.cc.Invoke(ctx, "/main.LikeService/getTwitLikes", in, out, opts...)
+func (c *reactionServiceClient) GetTwitReactions(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*ActionResult, error) {
+	out := new(ActionResult)
+	err := c.cc.Invoke(ctx, "/main.ReactionService/getTwitReactions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *likeServiceClient) LikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error) {
-	out := new(Like)
-	err := c.cc.Invoke(ctx, "/main.LikeService/likeTwit", in, out, opts...)
+func (c *reactionServiceClient) ReactToTwit(ctx context.Context, in *UsersAction, opts ...grpc.CallOption) (*ResponseReaction, error) {
+	out := new(ResponseReaction)
+	err := c.cc.Invoke(ctx, "/main.ReactionService/reactToTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *likeServiceClient) UnlikeTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Like, error) {
-	out := new(Like)
-	err := c.cc.Invoke(ctx, "/main.LikeService/unlikeTwit", in, out, opts...)
+func (c *reactionServiceClient) UnreactToTwit(ctx context.Context, in *UsersAction, opts ...grpc.CallOption) (*ResponseReaction, error) {
+	out := new(ResponseReaction)
+	err := c.cc.Invoke(ctx, "/main.ReactionService/unreactToTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// LikeServiceServer is the server API for LikeService service.
-// All implementations must embed UnimplementedLikeServiceServer
+// ReactionServiceServer is the server API for ReactionService service.
+// All implementations must embed UnimplementedReactionServiceServer
 // for forward compatibility
-type LikeServiceServer interface {
-	GetTwitLikes(context.Context, *ReactionUUID) (*Like, error)
-	LikeTwit(context.Context, *ReactionUUID) (*Like, error)
-	UnlikeTwit(context.Context, *ReactionUUID) (*Like, error)
-	mustEmbedUnimplementedLikeServiceServer()
+type ReactionServiceServer interface {
+	GetTwitReactions(context.Context, *ReactionUUID) (*ActionResult, error)
+	ReactToTwit(context.Context, *UsersAction) (*ResponseReaction, error)
+	UnreactToTwit(context.Context, *UsersAction) (*ResponseReaction, error)
+	mustEmbedUnimplementedReactionServiceServer()
 }
 
-// UnimplementedLikeServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedLikeServiceServer struct {
+// UnimplementedReactionServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedReactionServiceServer struct {
 }
 
-func (UnimplementedLikeServiceServer) GetTwitLikes(context.Context, *ReactionUUID) (*Like, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTwitLikes not implemented")
+func (UnimplementedReactionServiceServer) GetTwitReactions(context.Context, *ReactionUUID) (*ActionResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTwitReactions not implemented")
 }
-func (UnimplementedLikeServiceServer) LikeTwit(context.Context, *ReactionUUID) (*Like, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LikeTwit not implemented")
+func (UnimplementedReactionServiceServer) ReactToTwit(context.Context, *UsersAction) (*ResponseReaction, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReactToTwit not implemented")
 }
-func (UnimplementedLikeServiceServer) UnlikeTwit(context.Context, *ReactionUUID) (*Like, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnlikeTwit not implemented")
+func (UnimplementedReactionServiceServer) UnreactToTwit(context.Context, *UsersAction) (*ResponseReaction, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnreactToTwit not implemented")
 }
-func (UnimplementedLikeServiceServer) mustEmbedUnimplementedLikeServiceServer() {}
+func (UnimplementedReactionServiceServer) mustEmbedUnimplementedReactionServiceServer() {}
 
-// UnsafeLikeServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to LikeServiceServer will
+// UnsafeReactionServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ReactionServiceServer will
 // result in compilation errors.
-type UnsafeLikeServiceServer interface {
-	mustEmbedUnimplementedLikeServiceServer()
+type UnsafeReactionServiceServer interface {
+	mustEmbedUnimplementedReactionServiceServer()
 }
 
-func RegisterLikeServiceServer(s grpc.ServiceRegistrar, srv LikeServiceServer) {
-	s.RegisterService(&LikeService_ServiceDesc, srv)
+func RegisterReactionServiceServer(s grpc.ServiceRegistrar, srv ReactionServiceServer) {
+	s.RegisterService(&ReactionService_ServiceDesc, srv)
 }
 
-func _LikeService_GetTwitLikes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ReactionService_GetTwitReactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReactionUUID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LikeServiceServer).GetTwitLikes(ctx, in)
+		return srv.(ReactionServiceServer).GetTwitReactions(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.LikeService/getTwitLikes",
+		FullMethod: "/main.ReactionService/getTwitReactions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LikeServiceServer).GetTwitLikes(ctx, req.(*ReactionUUID))
+		return srv.(ReactionServiceServer).GetTwitReactions(ctx, req.(*ReactionUUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LikeService_LikeTwit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReactionUUID)
+func _ReactionService_ReactToTwit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UsersAction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LikeServiceServer).LikeTwit(ctx, in)
+		return srv.(ReactionServiceServer).ReactToTwit(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.LikeService/likeTwit",
+		FullMethod: "/main.ReactionService/reactToTwit",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LikeServiceServer).LikeTwit(ctx, req.(*ReactionUUID))
+		return srv.(ReactionServiceServer).ReactToTwit(ctx, req.(*UsersAction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LikeService_UnlikeTwit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReactionUUID)
+func _ReactionService_UnreactToTwit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UsersAction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LikeServiceServer).UnlikeTwit(ctx, in)
+		return srv.(ReactionServiceServer).UnreactToTwit(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.LikeService/unlikeTwit",
+		FullMethod: "/main.ReactionService/unreactToTwit",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LikeServiceServer).UnlikeTwit(ctx, req.(*ReactionUUID))
+		return srv.(ReactionServiceServer).UnreactToTwit(ctx, req.(*UsersAction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// LikeService_ServiceDesc is the grpc.ServiceDesc for LikeService service.
+// ReactionService_ServiceDesc is the grpc.ServiceDesc for ReactionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var LikeService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "main.LikeService",
-	HandlerType: (*LikeServiceServer)(nil),
+var ReactionService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "main.ReactionService",
+	HandlerType: (*ReactionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "getTwitLikes",
-			Handler:    _LikeService_GetTwitLikes_Handler,
+			MethodName: "getTwitReactions",
+			Handler:    _ReactionService_GetTwitReactions_Handler,
 		},
 		{
-			MethodName: "likeTwit",
-			Handler:    _LikeService_LikeTwit_Handler,
+			MethodName: "reactToTwit",
+			Handler:    _ReactionService_ReactToTwit_Handler,
 		},
 		{
-			MethodName: "unlikeTwit",
-			Handler:    _LikeService_UnlikeTwit_Handler,
+			MethodName: "unreactToTwit",
+			Handler:    _ReactionService_UnreactToTwit_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/reactions/reactions.proto",
-}
-
-// RetwitServiceClient is the client API for RetwitService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type RetwitServiceClient interface {
-	GetTwitRetwits(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error)
-	RetwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error)
-	UnretwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error)
-}
-
-type retwitServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewRetwitServiceClient(cc grpc.ClientConnInterface) RetwitServiceClient {
-	return &retwitServiceClient{cc}
-}
-
-func (c *retwitServiceClient) GetTwitRetwits(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error) {
-	out := new(Retwit)
-	err := c.cc.Invoke(ctx, "/main.RetwitService/getTwitRetwits", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *retwitServiceClient) RetwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error) {
-	out := new(Retwit)
-	err := c.cc.Invoke(ctx, "/main.RetwitService/retwitTwit", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *retwitServiceClient) UnretwitTwit(ctx context.Context, in *ReactionUUID, opts ...grpc.CallOption) (*Retwit, error) {
-	out := new(Retwit)
-	err := c.cc.Invoke(ctx, "/main.RetwitService/unretwitTwit", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// RetwitServiceServer is the server API for RetwitService service.
-// All implementations must embed UnimplementedRetwitServiceServer
-// for forward compatibility
-type RetwitServiceServer interface {
-	GetTwitRetwits(context.Context, *ReactionUUID) (*Retwit, error)
-	RetwitTwit(context.Context, *ReactionUUID) (*Retwit, error)
-	UnretwitTwit(context.Context, *ReactionUUID) (*Retwit, error)
-	mustEmbedUnimplementedRetwitServiceServer()
-}
-
-// UnimplementedRetwitServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedRetwitServiceServer struct {
-}
-
-func (UnimplementedRetwitServiceServer) GetTwitRetwits(context.Context, *ReactionUUID) (*Retwit, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTwitRetwits not implemented")
-}
-func (UnimplementedRetwitServiceServer) RetwitTwit(context.Context, *ReactionUUID) (*Retwit, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RetwitTwit not implemented")
-}
-func (UnimplementedRetwitServiceServer) UnretwitTwit(context.Context, *ReactionUUID) (*Retwit, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnretwitTwit not implemented")
-}
-func (UnimplementedRetwitServiceServer) mustEmbedUnimplementedRetwitServiceServer() {}
-
-// UnsafeRetwitServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RetwitServiceServer will
-// result in compilation errors.
-type UnsafeRetwitServiceServer interface {
-	mustEmbedUnimplementedRetwitServiceServer()
-}
-
-func RegisterRetwitServiceServer(s grpc.ServiceRegistrar, srv RetwitServiceServer) {
-	s.RegisterService(&RetwitService_ServiceDesc, srv)
-}
-
-func _RetwitService_GetTwitRetwits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReactionUUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RetwitServiceServer).GetTwitRetwits(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/main.RetwitService/getTwitRetwits",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RetwitServiceServer).GetTwitRetwits(ctx, req.(*ReactionUUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RetwitService_RetwitTwit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReactionUUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RetwitServiceServer).RetwitTwit(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/main.RetwitService/retwitTwit",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RetwitServiceServer).RetwitTwit(ctx, req.(*ReactionUUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RetwitService_UnretwitTwit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReactionUUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RetwitServiceServer).UnretwitTwit(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/main.RetwitService/unretwitTwit",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RetwitServiceServer).UnretwitTwit(ctx, req.(*ReactionUUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// RetwitService_ServiceDesc is the grpc.ServiceDesc for RetwitService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var RetwitService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "main.RetwitService",
-	HandlerType: (*RetwitServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "getTwitRetwits",
-			Handler:    _RetwitService_GetTwitRetwits_Handler,
-		},
-		{
-			MethodName: "retwitTwit",
-			Handler:    _RetwitService_RetwitTwit_Handler,
-		},
-		{
-			MethodName: "unretwitTwit",
-			Handler:    _RetwitService_UnretwitTwit_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/reactions/reactions.proto",
+	Metadata: "reactions.proto",
 }

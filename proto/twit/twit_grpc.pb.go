@@ -20,9 +20,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TwitServiceClient interface {
 	GetTwits(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (TwitService_GetTwitsClient, error)
-	WriteTwit(ctx context.Context, in *Twit, opts ...grpc.CallOption) (*Twit, error)
+	WriteTwit(ctx context.Context, in *Twit, opts ...grpc.CallOption) (*ResponseTwit, error)
 	GetTwit(ctx context.Context, in *TwitUUID, opts ...grpc.CallOption) (*Twit, error)
-	DeleteTwit(ctx context.Context, in *TwitUUID, opts ...grpc.CallOption) (*Twit, error)
+	DeleteTwit(ctx context.Context, in *TwitUUID, opts ...grpc.CallOption) (*ResponseTwit, error)
 }
 
 type twitServiceClient struct {
@@ -65,8 +65,8 @@ func (x *twitServiceGetTwitsClient) Recv() (*Twit, error) {
 	return m, nil
 }
 
-func (c *twitServiceClient) WriteTwit(ctx context.Context, in *Twit, opts ...grpc.CallOption) (*Twit, error) {
-	out := new(Twit)
+func (c *twitServiceClient) WriteTwit(ctx context.Context, in *Twit, opts ...grpc.CallOption) (*ResponseTwit, error) {
+	out := new(ResponseTwit)
 	err := c.cc.Invoke(ctx, "/main.TwitService/writeTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -83,8 +83,8 @@ func (c *twitServiceClient) GetTwit(ctx context.Context, in *TwitUUID, opts ...g
 	return out, nil
 }
 
-func (c *twitServiceClient) DeleteTwit(ctx context.Context, in *TwitUUID, opts ...grpc.CallOption) (*Twit, error) {
-	out := new(Twit)
+func (c *twitServiceClient) DeleteTwit(ctx context.Context, in *TwitUUID, opts ...grpc.CallOption) (*ResponseTwit, error) {
+	out := new(ResponseTwit)
 	err := c.cc.Invoke(ctx, "/main.TwitService/deleteTwit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -97,9 +97,9 @@ func (c *twitServiceClient) DeleteTwit(ctx context.Context, in *TwitUUID, opts .
 // for forward compatibility
 type TwitServiceServer interface {
 	GetTwits(*emptypb.Empty, TwitService_GetTwitsServer) error
-	WriteTwit(context.Context, *Twit) (*Twit, error)
+	WriteTwit(context.Context, *Twit) (*ResponseTwit, error)
 	GetTwit(context.Context, *TwitUUID) (*Twit, error)
-	DeleteTwit(context.Context, *TwitUUID) (*Twit, error)
+	DeleteTwit(context.Context, *TwitUUID) (*ResponseTwit, error)
 	mustEmbedUnimplementedTwitServiceServer()
 }
 
@@ -110,13 +110,13 @@ type UnimplementedTwitServiceServer struct {
 func (UnimplementedTwitServiceServer) GetTwits(*emptypb.Empty, TwitService_GetTwitsServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetTwits not implemented")
 }
-func (UnimplementedTwitServiceServer) WriteTwit(context.Context, *Twit) (*Twit, error) {
+func (UnimplementedTwitServiceServer) WriteTwit(context.Context, *Twit) (*ResponseTwit, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WriteTwit not implemented")
 }
 func (UnimplementedTwitServiceServer) GetTwit(context.Context, *TwitUUID) (*Twit, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTwit not implemented")
 }
-func (UnimplementedTwitServiceServer) DeleteTwit(context.Context, *TwitUUID) (*Twit, error) {
+func (UnimplementedTwitServiceServer) DeleteTwit(context.Context, *TwitUUID) (*ResponseTwit, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTwit not implemented")
 }
 func (UnimplementedTwitServiceServer) mustEmbedUnimplementedTwitServiceServer() {}
@@ -234,5 +234,5 @@ var TwitService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/twit/twit.proto",
+	Metadata: "twit.proto",
 }
