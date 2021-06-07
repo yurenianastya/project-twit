@@ -1,7 +1,7 @@
 package main
 
 import (
-	"project-twit/methods"
+	"github.com/yurenianastya/project-twit/methods"
 )
 
 func main() {

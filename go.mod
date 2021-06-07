@@ -1,4 +1,4 @@
-module project-twit
+module github.com/yurenianastya/project-twit
 
 go 1.16
 

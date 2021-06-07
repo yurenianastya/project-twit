@@ -18,9 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccountServiceClient interface {
-	GetLikedTwits(ctx context.Context, in *Username, opts ...grpc.CallOption) (AccountService_GetLikedTwitsClient, error)
-	GetRetwitedTwits(ctx context.Context, in *Username, opts ...grpc.CallOption) (AccountService_GetRetwitedTwitsClient, error)
-	GetUserTwits(ctx context.Context, in *Username, opts ...grpc.CallOption) (AccountService_GetUserTwitsClient, error)
+	GetLikedTwits(ctx context.Context, in *AccountUUID, opts ...grpc.CallOption) (AccountService_GetLikedTwitsClient, error)
+	GetRetwitedTwits(ctx context.Context, in *AccountUUID, opts ...grpc.CallOption) (AccountService_GetRetwitedTwitsClient, error)
+	GetUserTwits(ctx context.Context, in *AccountUUID, opts ...grpc.CallOption) (AccountService_GetUserTwitsClient, error)
 }
 
 type accountServiceClient struct {
@@ -31,7 +31,7 @@ func NewAccountServiceClient(cc grpc.ClientConnInterface) AccountServiceClient {
 	return &accountServiceClient{cc}
 }
 
-func (c *accountServiceClient) GetLikedTwits(ctx context.Context, in *Username, opts ...grpc.CallOption) (AccountService_GetLikedTwitsClient, error) {
+func (c *accountServiceClient) GetLikedTwits(ctx context.Context, in *AccountUUID, opts ...grpc.CallOption) (AccountService_GetLikedTwitsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &AccountService_ServiceDesc.Streams[0], "/main.AccountService/getLikedTwits", opts...)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (x *accountServiceGetLikedTwitsClient) Recv() (*AccountTwit, error) {
 	return m, nil
 }
 
-func (c *accountServiceClient) GetRetwitedTwits(ctx context.Context, in *Username, opts ...grpc.CallOption) (AccountService_GetRetwitedTwitsClient, error) {
+func (c *accountServiceClient) GetRetwitedTwits(ctx context.Context, in *AccountUUID, opts ...grpc.CallOption) (AccountService_GetRetwitedTwitsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &AccountService_ServiceDesc.Streams[1], "/main.AccountService/getRetwitedTwits", opts...)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (x *accountServiceGetRetwitedTwitsClient) Recv() (*AccountTwit, error) {
 	return m, nil
 }
 
-func (c *accountServiceClient) GetUserTwits(ctx context.Context, in *Username, opts ...grpc.CallOption) (AccountService_GetUserTwitsClient, error) {
+func (c *accountServiceClient) GetUserTwits(ctx context.Context, in *AccountUUID, opts ...grpc.CallOption) (AccountService_GetUserTwitsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &AccountService_ServiceDesc.Streams[2], "/main.AccountService/getUserTwits", opts...)
 	if err != nil {
 		return nil, err
@@ -131,9 +131,9 @@ func (x *accountServiceGetUserTwitsClient) Recv() (*AccountTwit, error) {
 // All implementations must embed UnimplementedAccountServiceServer
 // for forward compatibility
 type AccountServiceServer interface {
-	GetLikedTwits(*Username, AccountService_GetLikedTwitsServer) error
-	GetRetwitedTwits(*Username, AccountService_GetRetwitedTwitsServer) error
-	GetUserTwits(*Username, AccountService_GetUserTwitsServer) error
+	GetLikedTwits(*AccountUUID, AccountService_GetLikedTwitsServer) error
+	GetRetwitedTwits(*AccountUUID, AccountService_GetRetwitedTwitsServer) error
+	GetUserTwits(*AccountUUID, AccountService_GetUserTwitsServer) error
 	mustEmbedUnimplementedAccountServiceServer()
 }
 
@@ -141,13 +141,13 @@ type AccountServiceServer interface {
 type UnimplementedAccountServiceServer struct {
 }
 
-func (UnimplementedAccountServiceServer) GetLikedTwits(*Username, AccountService_GetLikedTwitsServer) error {
+func (UnimplementedAccountServiceServer) GetLikedTwits(*AccountUUID, AccountService_GetLikedTwitsServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetLikedTwits not implemented")
 }
-func (UnimplementedAccountServiceServer) GetRetwitedTwits(*Username, AccountService_GetRetwitedTwitsServer) error {
+func (UnimplementedAccountServiceServer) GetRetwitedTwits(*AccountUUID, AccountService_GetRetwitedTwitsServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetRetwitedTwits not implemented")
 }
-func (UnimplementedAccountServiceServer) GetUserTwits(*Username, AccountService_GetUserTwitsServer) error {
+func (UnimplementedAccountServiceServer) GetUserTwits(*AccountUUID, AccountService_GetUserTwitsServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserTwits not implemented")
 }
 func (UnimplementedAccountServiceServer) mustEmbedUnimplementedAccountServiceServer() {}
@@ -164,7 +164,7 @@ func RegisterAccountServiceServer(s grpc.ServiceRegistrar, srv AccountServiceSer
 }
 
 func _AccountService_GetLikedTwits_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Username)
+	m := new(AccountUUID)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (x *accountServiceGetLikedTwitsServer) Send(m *AccountTwit) error {
 }
 
 func _AccountService_GetRetwitedTwits_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Username)
+	m := new(AccountUUID)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -206,7 +206,7 @@ func (x *accountServiceGetRetwitedTwitsServer) Send(m *AccountTwit) error {
 }
 
 func _AccountService_GetUserTwits_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Username)
+	m := new(AccountUUID)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}

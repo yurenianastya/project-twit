@@ -8,7 +8,7 @@ message accountTwitUUID {
   string value = 1;
 }
 
-message Username {
+message AccountUUID {
   string value = 1;
 }
 
@@ -20,7 +20,7 @@ message AccountTwit {
 }
 
 service AccountService {
-  rpc getLikedTwits(Username) returns (stream AccountTwit);
-  rpc getRetwitedTwits(Username) returns (stream AccountTwit);
-  rpc getUserTwits(Username) returns (stream AccountTwit);
+  rpc getLikedTwits(AccountUUID) returns (stream AccountTwit);
+  rpc getRetwitedTwits(AccountUUID) returns (stream AccountTwit);
+  rpc getUserTwits(AccountUUID) returns (stream AccountTwit);
 }

@@ -1,0 +1,28 @@
+syntax = "proto3";
+package main;
+
+import "google/protobuf/empty.proto";
+option go_package = "./;_";
+
+message User {
+   UserUUID id = 1;
+   string username = 2;
+   string password = 3;
+   string email = 4;
+}
+
+message UserResponse {
+  string value = 1;
+}
+
+message UserUUID {
+  string value = 1;
+}
+
+service UserService {
+  rpc createUser(User) returns (UserResponse);
+  rpc getUser(UserUUID) returns (User);
+  rpc getUsers(google.protobuf.Empty) returns (stream User);
+  rpc updateUser(User) returns (User);
+  rpc deleteUser(UserUUID) returns (UserResponse);
+}

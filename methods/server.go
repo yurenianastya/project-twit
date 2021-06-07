@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
+	"github.com/yurenianastya/project-twit/proto/account"
+	"github.com/yurenianastya/project-twit/proto/lists"
+	"github.com/yurenianastya/project-twit/proto/reactions"
+	"github.com/yurenianastya/project-twit/proto/twit"
+	"github.com/yurenianastya/project-twit/proto/user"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
-	"project-twit/proto/account"
-	"project-twit/proto/lists"
-	"project-twit/proto/reactions"
-	"project-twit/proto/twit"
 	"time"
 )
 
@@ -47,6 +48,7 @@ func Configure() {
 	reactions.RegisterReactionServiceServer(server, &Reaction{})
 	lists.RegisterListServiceServer(server, &List{})
 	account.RegisterAccountServiceServer(server, &Account{})
+	user.RegisterUserServiceServer(server, &User{})
 	reflection.Register(server)
 	// connection to mongodb
 	Client, _ = mongo.NewClient(options.Client().

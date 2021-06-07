@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/yurenianastya/project-twit/proto/reactions"
+	"github.com/yurenianastya/project-twit/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"project-twit/proto/reactions"
-	"project-twit/utils"
 )
 
 type Reaction struct {
@@ -35,11 +35,11 @@ func (r *Reaction) GetTwitReactions(c context.Context, id *reactions.ReactionUUI
 
 func (r *Reaction) ReactToTwit(c context.Context, action *reactions.UsersAction) (*reactions.ResponseReaction, error) {
 	reactedIdCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
-		Collection(GetEnvVariable("USER_REACTED_COLLECTION",".."))
+		Collection(GetEnvVariable("USER_REACTED_TWITS",".."))
 	_, err := reactedIdCollection.InsertOne(MongoCtx, bson.M{
 		"_id": uuid.New().String(),
 		"twit_id": action.TwitId.Value,
-		"username": action.User,
+		"user_id": action.User,
 		"action": action.Action,
 	})
 	if err != nil {
@@ -68,7 +68,7 @@ func (r *Reaction) ReactToTwit(c context.Context, action *reactions.UsersAction)
 
 func (r *Reaction) UnreactToTwit(c context.Context, action *reactions.UsersAction) (*reactions.ResponseReaction, error) {
 	reactedIdCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
-		Collection(GetEnvVariable("USER_REACTED_COLLECTION",".."))
+		Collection(GetEnvVariable("USER_REACTED_TWITS",".."))
 	_, err := reactedIdCollection.DeleteOne(MongoCtx, bson.M{
 		"twit_id": action.TwitId.Value,
 	})

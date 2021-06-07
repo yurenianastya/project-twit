@@ -8,13 +8,18 @@ message listUUID {
   string value = 1;
 }
 
-message User {
+message UserWithList {
   string listUUID = 1;
-  string username = 2;
+  string UserWithListUUID = 2;
+}
+
+message UsersUUID {
+  string value = 1;
 }
 
 message ListName {
-  string value = 1;
+  string name = 1;
+  string creatorId = 2;
 }
 
 message ListResponse {
@@ -29,9 +34,10 @@ message ListTwit {
 }
 
 service ListService {
+  rpc getLists(UsersUUID) returns (stream ListName);
   rpc createCustomList(ListName) returns (ListResponse);
-  rpc addUserToCustomList(User) returns (ListResponse);
-  rpc removeUserFromCustomList(User) returns (ListResponse);
+  rpc addUserToCustomList(UserWithList) returns (ListResponse);
+  rpc removeUserFromCustomList(UserWithList) returns (ListResponse);
   rpc getListUsers(listUUID) returns (ListResponse);
   rpc getUsersTwitsFromCustomList(listUUID) returns (stream ListTwit);
   rpc deleteCustomList(listUUID) returns (ListResponse);

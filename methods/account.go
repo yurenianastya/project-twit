@@ -3,13 +3,13 @@ package methods
 import (
 	"context"
 	"fmt"
+	"github.com/yurenianastya/project-twit/proto/account"
+	"github.com/yurenianastya/project-twit/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
-	"project-twit/proto/account"
-	"project-twit/utils"
 )
 
 type Account struct {
@@ -21,14 +21,19 @@ type streamType interface {
 	account.AccountService_GetLikedTwitsServer
 }
 
-func getReactedTwits(action string, Username *account.Username, stream streamType) error {
-	var retrievedTwitIds []string
-	decodedIds := utils.MongoDecodedIds{}
-	data := utils.MongoDecodedTwitData{}
+func getReactedTwits(action string, Username *account.AccountUUID, stream streamType) error {
 	idCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
-		Collection(GetEnvVariable("USER_REACTED_COLLECTION",".."))
+		Collection(GetEnvVariable("USER_REACTED_TWITS",".."))
+	twitCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
+	userCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("USER",".."))
+	var retrievedTwitIds []string
+	decodedIds := utils.MongoDecodedTwitIds{}
+	data := utils.MongoDecodedTwitData{}
+	usernameData := utils.MongoDecodedUsernames{}
 	idCursor, err := idCollection.Find(context.Background(), bson.M{
-		"username": Username.Value,
+		"user_id": Username.Value,
 		"action": action,
 	})
 	if err != nil {
@@ -45,8 +50,9 @@ func getReactedTwits(action string, Username *account.Username, stream streamTyp
 	if err != nil {
 		return err
 	}
-	twitCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
-		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
+	if retrievedTwitIds == nil {
+		return nil
+	}
 	twitCursor, err := twitCollection.Find(context.Background(), bson.M{"_id": bson.M{"$in":retrievedTwitIds}})
 	if err != nil {
 		return err
@@ -57,11 +63,16 @@ func getReactedTwits(action string, Username *account.Username, stream streamTyp
 			return status.Errorf(codes.Unavailable, fmt.Sprintf("Could not decode data: %v", err))
 		}
 		id := &account.AccountTwitUUID{Value: data.ID}
+		result := userCollection.FindOne(MongoCtx, bson.M{"_id": data.User})
+		if err := result.Decode(&usernameData); err != nil {
+			return status.Errorf(codes.NotFound,
+				fmt.Sprintf("Could not find user with Object ID %s: %v", data.User, err))
+		}
 		response := &account.AccountTwit{
 			Id: id,
 			Date: data.Date,
 			Text: data.Text,
-			Nickname: data.Nickname,
+			Nickname: usernameData.Username,
 		}
 		err = stream.Send(response)
 		if err != nil {
@@ -74,27 +85,30 @@ func getReactedTwits(action string, Username *account.Username, stream streamTyp
 	return nil
 }
 
-func (a *Account) GetLikedTwits(Username *account.Username, stream account.AccountService_GetLikedTwitsServer) error {
-	err := getReactedTwits("like", Username, stream)
+func (a *Account) GetLikedTwits(userId *account.AccountUUID, stream account.AccountService_GetLikedTwitsServer) error {
+	err := getReactedTwits("like", userId, stream)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *Account) GetRetwitedTwits(Username *account.Username, stream account.AccountService_GetRetwitedTwitsServer) error {
-	err := getReactedTwits("retwit", Username, stream)
+func (a *Account) GetRetwitedTwits(userId *account.AccountUUID, stream account.AccountService_GetRetwitedTwitsServer) error {
+	err := getReactedTwits("retwit", userId, stream)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *Account) GetUserTwits(Username *account.Username, stream account.AccountService_GetUserTwitsServer) error {
+func (a *Account) GetUserTwits(userId *account.AccountUUID, stream account.AccountService_GetUserTwitsServer) error {
 	twitCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
 		Collection(GetEnvVariable("TWIT_COLLECTION",".."))
+	userCollection := Client.Database(GetEnvVariable("TWIT_DB","..")).
+		Collection(GetEnvVariable("USER",".."))
 	data := utils.MongoDecodedTwitData{}
-	cursor, err := twitCollection.Find(context.Background(), bson.M{"nickname": Username.Value})
+	usernameData := utils.MongoDecodedUsernames{}
+	cursor, err := twitCollection.Find(context.Background(), bson.M{"user_id": userId.Value})
 	if err != nil {
 		return status.Errorf(codes.Internal, fmt.Sprintf("Unknown internal error: %v", err))
 	}
@@ -109,12 +123,17 @@ func (a *Account) GetUserTwits(Username *account.Username, stream account.Accoun
 		if err != nil {
 			return status.Errorf(codes.Unavailable, fmt.Sprintf("Could not decode data: %v", err))
 		}
+		result := userCollection.FindOne(MongoCtx, bson.M{"_id": data.User})
+		if err := result.Decode(&usernameData); err != nil {
+			return status.Errorf(codes.NotFound,
+				fmt.Sprintf("Could not find user with Object ID %s: %v", data.User, err))
+		}
 		twitID := account.AccountTwitUUID{Value: data.ID}
 		protoData := &account.AccountTwit{
 			Id: &twitID,
 			Date: data.Date,
 			Text: data.Text,
-			Nickname: data.Nickname}
+			Nickname: usernameData.Username}
 		err = stream.Send(protoData)
 		if err != nil {
 			return err

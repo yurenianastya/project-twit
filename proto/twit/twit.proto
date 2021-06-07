@@ -10,7 +10,7 @@ message Twit {
   twitUUID id = 1;
   google.protobuf.Timestamp date = 2;
   string text = 3;
-  string nickname = 4;
+  string user = 4;
 }
 
 message ResponseTwit {

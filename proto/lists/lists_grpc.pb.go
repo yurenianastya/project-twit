@@ -18,9 +18,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ListServiceClient interface {
+	GetLists(ctx context.Context, in *UsersUUID, opts ...grpc.CallOption) (ListService_GetListsClient, error)
 	CreateCustomList(ctx context.Context, in *ListName, opts ...grpc.CallOption) (*ListResponse, error)
-	AddUserToCustomList(ctx context.Context, in *User, opts ...grpc.CallOption) (*ListResponse, error)
-	RemoveUserFromCustomList(ctx context.Context, in *User, opts ...grpc.CallOption) (*ListResponse, error)
+	AddUserToCustomList(ctx context.Context, in *UserWithList, opts ...grpc.CallOption) (*ListResponse, error)
+	RemoveUserFromCustomList(ctx context.Context, in *UserWithList, opts ...grpc.CallOption) (*ListResponse, error)
 	GetListUsers(ctx context.Context, in *ListUUID, opts ...grpc.CallOption) (*ListResponse, error)
 	GetUsersTwitsFromCustomList(ctx context.Context, in *ListUUID, opts ...grpc.CallOption) (ListService_GetUsersTwitsFromCustomListClient, error)
 	DeleteCustomList(ctx context.Context, in *ListUUID, opts ...grpc.CallOption) (*ListResponse, error)
@@ -34,6 +35,38 @@ func NewListServiceClient(cc grpc.ClientConnInterface) ListServiceClient {
 	return &listServiceClient{cc}
 }
 
+func (c *listServiceClient) GetLists(ctx context.Context, in *UsersUUID, opts ...grpc.CallOption) (ListService_GetListsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ListService_ServiceDesc.Streams[0], "/main.ListService/getLists", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &listServiceGetListsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ListService_GetListsClient interface {
+	Recv() (*ListName, error)
+	grpc.ClientStream
+}
+
+type listServiceGetListsClient struct {
+	grpc.ClientStream
+}
+
+func (x *listServiceGetListsClient) Recv() (*ListName, error) {
+	m := new(ListName)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *listServiceClient) CreateCustomList(ctx context.Context, in *ListName, opts ...grpc.CallOption) (*ListResponse, error) {
 	out := new(ListResponse)
 	err := c.cc.Invoke(ctx, "/main.ListService/createCustomList", in, out, opts...)
@@ -43,7 +76,7 @@ func (c *listServiceClient) CreateCustomList(ctx context.Context, in *ListName, 
 	return out, nil
 }
 
-func (c *listServiceClient) AddUserToCustomList(ctx context.Context, in *User, opts ...grpc.CallOption) (*ListResponse, error) {
+func (c *listServiceClient) AddUserToCustomList(ctx context.Context, in *UserWithList, opts ...grpc.CallOption) (*ListResponse, error) {
 	out := new(ListResponse)
 	err := c.cc.Invoke(ctx, "/main.ListService/addUserToCustomList", in, out, opts...)
 	if err != nil {
@@ -52,7 +85,7 @@ func (c *listServiceClient) AddUserToCustomList(ctx context.Context, in *User, o
 	return out, nil
 }
 
-func (c *listServiceClient) RemoveUserFromCustomList(ctx context.Context, in *User, opts ...grpc.CallOption) (*ListResponse, error) {
+func (c *listServiceClient) RemoveUserFromCustomList(ctx context.Context, in *UserWithList, opts ...grpc.CallOption) (*ListResponse, error) {
 	out := new(ListResponse)
 	err := c.cc.Invoke(ctx, "/main.ListService/removeUserFromCustomList", in, out, opts...)
 	if err != nil {
@@ -71,7 +104,7 @@ func (c *listServiceClient) GetListUsers(ctx context.Context, in *ListUUID, opts
 }
 
 func (c *listServiceClient) GetUsersTwitsFromCustomList(ctx context.Context, in *ListUUID, opts ...grpc.CallOption) (ListService_GetUsersTwitsFromCustomListClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ListService_ServiceDesc.Streams[0], "/main.ListService/getUsersTwitsFromCustomList", opts...)
+	stream, err := c.cc.NewStream(ctx, &ListService_ServiceDesc.Streams[1], "/main.ListService/getUsersTwitsFromCustomList", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -115,9 +148,10 @@ func (c *listServiceClient) DeleteCustomList(ctx context.Context, in *ListUUID, 
 // All implementations must embed UnimplementedListServiceServer
 // for forward compatibility
 type ListServiceServer interface {
+	GetLists(*UsersUUID, ListService_GetListsServer) error
 	CreateCustomList(context.Context, *ListName) (*ListResponse, error)
-	AddUserToCustomList(context.Context, *User) (*ListResponse, error)
-	RemoveUserFromCustomList(context.Context, *User) (*ListResponse, error)
+	AddUserToCustomList(context.Context, *UserWithList) (*ListResponse, error)
+	RemoveUserFromCustomList(context.Context, *UserWithList) (*ListResponse, error)
 	GetListUsers(context.Context, *ListUUID) (*ListResponse, error)
 	GetUsersTwitsFromCustomList(*ListUUID, ListService_GetUsersTwitsFromCustomListServer) error
 	DeleteCustomList(context.Context, *ListUUID) (*ListResponse, error)
@@ -128,13 +162,16 @@ type ListServiceServer interface {
 type UnimplementedListServiceServer struct {
 }
 
+func (UnimplementedListServiceServer) GetLists(*UsersUUID, ListService_GetListsServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetLists not implemented")
+}
 func (UnimplementedListServiceServer) CreateCustomList(context.Context, *ListName) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCustomList not implemented")
 }
-func (UnimplementedListServiceServer) AddUserToCustomList(context.Context, *User) (*ListResponse, error) {
+func (UnimplementedListServiceServer) AddUserToCustomList(context.Context, *UserWithList) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddUserToCustomList not implemented")
 }
-func (UnimplementedListServiceServer) RemoveUserFromCustomList(context.Context, *User) (*ListResponse, error) {
+func (UnimplementedListServiceServer) RemoveUserFromCustomList(context.Context, *UserWithList) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveUserFromCustomList not implemented")
 }
 func (UnimplementedListServiceServer) GetListUsers(context.Context, *ListUUID) (*ListResponse, error) {
@@ -159,6 +196,27 @@ func RegisterListServiceServer(s grpc.ServiceRegistrar, srv ListServiceServer) {
 	s.RegisterService(&ListService_ServiceDesc, srv)
 }
 
+func _ListService_GetLists_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(UsersUUID)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ListServiceServer).GetLists(m, &listServiceGetListsServer{stream})
+}
+
+type ListService_GetListsServer interface {
+	Send(*ListName) error
+	grpc.ServerStream
+}
+
+type listServiceGetListsServer struct {
+	grpc.ServerStream
+}
+
+func (x *listServiceGetListsServer) Send(m *ListName) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _ListService_CreateCustomList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListName)
 	if err := dec(in); err != nil {
@@ -178,7 +236,7 @@ func _ListService_CreateCustomList_Handler(srv interface{}, ctx context.Context,
 }
 
 func _ListService_AddUserToCustomList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(User)
+	in := new(UserWithList)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -190,13 +248,13 @@ func _ListService_AddUserToCustomList_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/main.ListService/addUserToCustomList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListServiceServer).AddUserToCustomList(ctx, req.(*User))
+		return srv.(ListServiceServer).AddUserToCustomList(ctx, req.(*UserWithList))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _ListService_RemoveUserFromCustomList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(User)
+	in := new(UserWithList)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -208,7 +266,7 @@ func _ListService_RemoveUserFromCustomList_Handler(srv interface{}, ctx context.
 		FullMethod: "/main.ListService/removeUserFromCustomList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListServiceServer).RemoveUserFromCustomList(ctx, req.(*User))
+		return srv.(ListServiceServer).RemoveUserFromCustomList(ctx, req.(*UserWithList))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -299,6 +357,11 @@ var ListService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "getLists",
+			Handler:       _ListService_GetLists_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "getUsersTwitsFromCustomList",
 			Handler:       _ListService_GetUsersTwitsFromCustomList_Handler,
