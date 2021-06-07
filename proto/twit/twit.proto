@@ -1,0 +1,29 @@
+syntax = "proto3";
+package main;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./;_";
+
+message Twit {
+  twitUUID id = 1;
+  google.protobuf.Timestamp date = 2;
+  string text = 3;
+  string user = 4;
+}
+
+message ResponseTwit {
+  string value = 1;
+}
+
+message twitUUID {
+  string value = 1;
+}
+
+service TwitService {
+  rpc getTwits(google.protobuf.Empty) returns (stream Twit) {}
+  rpc writeTwit(Twit) returns (ResponseTwit) {}
+  rpc getTwit(twitUUID) returns (Twit) {}
+  rpc deleteTwit(twitUUID) returns (ResponseTwit) {}
+}

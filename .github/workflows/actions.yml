@@ -1,0 +1,22 @@
+name: Go
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    types: ['opened', 'edited', 'reopened', 'synchronize']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+
+      - name: Installing lint
+        run: make install-lint
+
+      - name: Lint
+        run: make run-linter
